@@ -27,10 +27,10 @@ class AuthenticationController extends GetxController {
   bool get storeUser => _storeUser.value;
 
   // it returns _logged, if it is true it calls getStoredUser
-  bool get logged {}
+  bool get logged {return _logged.value; }
 
   // besides updating _storeUser, if false it clears stored data
-  set storeUser(bool mode) {}
+  set storeUser(bool mode) {_storeUser.value=mode;}
 
   // updates _logged
   set logged(bool mode) {
@@ -38,25 +38,50 @@ class AuthenticationController extends GetxController {
   }
 
   // this method should clean the user data on sharedPrefs and controller
-  Future<void> clearStoredUser() async {}
+  Future<void> clearStoredUser() async {_authentication.clearStoredUser();}
 
   // this method gets the stored user on sharedPrefs and updates the data on
   // the controller
   Future<void> getStoredUser() async {
+    var user = await _authentication.getStoredUser();
+    _storeUserEmail.value = user.email;
+    _storeUserPassword.value = user.password;
     logInfo(
         'AuthenticationController getStoredUser and got <${user.email}> <${user.password}>');
   }
 
   // this method clears all stored data
-  clearAll() async {}
+  clearAll() async { await _authentication.clearAll(); }
 
   // used to send login data, if user data is ok and if storeUser is true
   // it also stores the user on controller
-  Future<bool> login(user, password) async {}
+  Future<bool> login(user, password) async { 
+    var userAuth = await _authentication.login(storeUser, user, password);
+
+    if( userAuth && storeUser == false){
+      logged = true;
+    }else{
+      logged = false;
+    }
+    if ( userAuth && storeUser == true) {
+           await _authentication.addUser(user, password);
+           logged = true;
+      }
+
+    return Future.value(logged);
+  }
 
   // used to send signup data
-  Future<bool> signup(user, password) async {}
+  Future<bool> signup(user, password) async {
+    await _authentication.signup(user, password);
+    return true;
+  }
 
   // used to logout the current user
-  void logout() async {}
+  void logout() async {
+    if(storeUser == false){
+      _authentication.clearStoredUser();
+    }
+    logged = false;
+  }
 }
