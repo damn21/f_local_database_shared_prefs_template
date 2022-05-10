@@ -65,6 +65,7 @@ class AuthenticationController extends GetxController {
     }
     if ( userAuth && storeUser == true) {
            await _authentication.addUser(user, password);
+           getStoredUser();
            logged = true;
       }
 
